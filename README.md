@@ -1,6 +1,6 @@
 # ETH-AVAX-Intermediate-Project1
 
-This Solidity program includes a simple contract which provides a implementation assert(), require() and revert() functions.
+This Solidity program includes a simple contract which provides an implementation of assert(), require() and revert() functions.
 
 ## Description
 
