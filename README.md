@@ -21,79 +21,74 @@ This Solidity contract implements a basic voting system on the Ethereum blockcha
 
 ```javascript
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.0;
 
-contract VotingSystem {
-    struct Voter {
-        bool hasVoted;
-        uint voteIndex;
-    }
-
-    struct Candidate {
-        string name;
-        uint voteCount;
-    }
-
+contract LaptopService {
     address public owner;
-    Candidate[] public candidates;
-    mapping(address => Voter) public voters;
+    enum Status { NotRequested, Requested, InProgress, Completed }
+    struct Service {
+        address customer;
+        string model;
+        Status state;
+        uint256 cost;
+    }
+
+    mapping(uint256 => Service) public data;  //services
+    uint256 public reqCount;
 
     constructor() {
         owner = msg.sender;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can call this function");
+        require(msg.sender == owner, "Only the owner can perform this action");
         _;
     }
 
-    function addCandidate(string memory name) public onlyOwner {
-        candidates.push(Candidate(name, 0));
+    // Function to submit a new service request
+    function submitRequest(string memory model) public {
+        require(bytes(model).length > 0, "Model cannot be empty");
+
+        uint256 previousCount = reqCount;
+        reqCount++;
+        data[reqCount] = Service(
+            msg.sender,
+            model,
+            Status.Requested,
+            0
+        );
+        assert(reqCount == previousCount + 1); 
     }
-    
-    //Function will allow the voters to vote for an option 
-    function vote(uint index) public {
-        require(index < candidates.length, "Invalid candidate index");
+
+    // Function to start the service for a given request
+    function startService(uint256 reqId, uint256 cost) public onlyOwner {
+        require(data[reqId].state == Status.Requested, "Service must be requested first");
+        require(cost >= 0, "Invalid cost amount");  
+
+        data[reqId].state = Status.InProgress;
+        data[reqId].cost = cost;
+    }
+
+    // Function to complete the service for a given request
+    function completeService(uint256 reqId) public onlyOwner {
+        require(data[reqId].state == Status.InProgress, "Service must be in progress");
+        data[reqId].state = Status.Completed;
         
-        if (voters[msg.sender].hasVoted) {
-          revert("You have already voted");
-        }
-
-        if (index >= candidates.length) {
-            revert("Candidate index out of range");
-        }
-
-        voters[msg.sender] = Voter(true, index);
-        candidates[index].voteCount += 1;
-
-        assert(candidates[index].voteCount > 0);
+        assert(data[reqId].state == Status.Completed);
     }
 
-    function getCandidateCount() public view returns (uint) {
-        if(candidates.length == 0){
-            revert("You haven't added any candidate yet");
+    // Function to pay for a completed service
+    function payForService(uint256 reqId) public payable {
+        Service storage serv = data[reqId];
+        require(serv.customer == msg.sender, "Only the customer can pay for this service");
+
+        if(serv.state != Status.Completed){
+            revert("Service must be completed to make payment");
+        }  
+        if(msg.value != serv.cost){
+            revert("Incorrect amount of Ether sent");
         }
-        return candidates.length;
-    }
-
-    //This function will determine the winner of the voting system
-    function getWinner() public view returns (string memory winName, uint winnerVoteCount) {
-        require(candidates.length > 0, "No candidates available");
-
-        uint winCount;  // winning Vote Count
-        uint winIndex;  // winning Index
-
-        for (uint i = 0; i < candidates.length; i++) {
-            if (candidates[i].voteCount > winCount) {
-                winCount = candidates[i].voteCount;
-                winIndex = i;
-            }
-        }
-
-        winName = candidates[winIndex].name;
-        winnerVoteCount = candidates[winIndex].voteCount;
-
-        assert(winCount > 0);
+        payable(owner).transfer(msg.value);
     }
 }
 
