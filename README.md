@@ -4,7 +4,7 @@ This Solidity program includes a simple contract which provides an implementatio
 
 ## Description
 
-This Solidity contract implements a basic voting system on the Ethereum blockchain. It features functionalities for adding candidates, casting votes, and determining the winner. Only the contract owner can add candidates, while any user can cast a vote for a candidate. This contract serves as a foundational component for creating decentralized voting applications and can be used as a learning resource for understanding Solidity programming and smart contract development.
+This Solidity contract implements a basic service request system for laptop services on the Ethereum blockchain. It features functionalities for submitting service requests, starting the service, completing the service, and making payments for completed services. The contract includes the use of require(), assert(), and revert() functions to handle errors and ensure correct execution flow. Only the contract owner can start and complete services, while any user can submit a request and pay for completed services.
 
 ### Prerequisites
 
