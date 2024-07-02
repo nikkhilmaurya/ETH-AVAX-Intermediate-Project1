@@ -3,9 +3,7 @@ pragma solidity ^0.8.0;
 
 contract LaptopService {
     address public owner;
-
     enum Status { NotRequested, Requested, InProgress, Completed }
-
     struct Service {
         address customer;
         string model;
@@ -30,7 +28,6 @@ contract LaptopService {
         require(bytes(model).length > 0, "Model cannot be empty");
 
         uint256 previousCount = reqCount;
-
         reqCount++;
         data[reqCount] = Service(
             msg.sender,
@@ -38,7 +35,6 @@ contract LaptopService {
             Status.Requested,
             0
         );
-
         assert(reqCount == previousCount + 1); 
     }
 
@@ -66,8 +62,7 @@ contract LaptopService {
 
         if(serv.state != Status.Completed){
             revert("Service must be completed to make payment");
-        }
-        
+        }  
         if(msg.value != serv.cost){
             revert("Incorrect amount of Ether sent");
         }
